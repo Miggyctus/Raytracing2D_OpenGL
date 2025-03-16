@@ -1,0 +1,6 @@
+﻿  GraphicsProject.cpp
+C:\Users\mayal\Desktop\NTUST\Graphics\GraphicsProject\GraphicsProject.cpp(11,21): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\mayal\Desktop\NTUST\Graphics\GraphicsProject\GraphicsProject.cpp(28,29): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\Users\mayal\Desktop\NTUST\Graphics\GraphicsProject\GraphicsProject.cpp(31,31): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(1127,5): error MSB6006: "link.exe" exited with code 1104.
+LINK : fatal error LNK1104: cannot open file 'freeglut.lib'
