@@ -2,6 +2,8 @@
 #include <GLFW/glfw3.h>
 #include <cmath>
 #include <iostream>
+#include <chrono>
+#include <windows.h>
 
 using namespace std;
 
@@ -27,6 +29,68 @@ struct Ray
     double angle;
 };
 
+double getCPUUsage()
+{
+    static ULARGE_INTEGER lastIdleTime = { 0 };
+    static ULARGE_INTEGER lastKernelTime = { 0 };
+    static ULARGE_INTEGER lastUserTime = { 0 };
+
+    FILETIME idleTime, kernelTime, userTime;
+    if (!GetSystemTimes(&idleTime, &kernelTime, &userTime))
+        return -1.0; // error
+
+    ULARGE_INTEGER idle, kernel, user;
+    idle.LowPart = idleTime.dwLowDateTime;
+    idle.HighPart = idleTime.dwHighDateTime;
+    kernel.LowPart = kernelTime.dwLowDateTime;
+    kernel.HighPart = kernelTime.dwHighDateTime;
+    user.LowPart = userTime.dwLowDateTime;
+    user.HighPart = userTime.dwHighDateTime;
+
+    ULONGLONG sysIdleDiff = idle.QuadPart - lastIdleTime.QuadPart;
+    ULONGLONG sysKernelDiff = kernel.QuadPart - lastKernelTime.QuadPart;
+    ULONGLONG sysUserDiff = user.QuadPart - lastUserTime.QuadPart;
+    ULONGLONG sysTotal = sysKernelDiff + sysUserDiff;
+
+    lastIdleTime = idle;
+    lastKernelTime = kernel;
+    lastUserTime = user;
+
+    if (sysTotal == 0)
+        return 0.0;
+
+    return (1.0 - (double(sysIdleDiff) / double(sysTotal))) * 100.0;
+}
+
+void displayMetrics(int rayCount, int vertexCount, double deltaTimeMs)
+{
+    static int frameCounter = 0;
+    static double timeAccumulator = 0.0;
+
+    timeAccumulator += deltaTimeMs;
+    frameCounter++;
+
+    if (timeAccumulator >= 1000.0) // Every 1 second
+    {
+        double averageFrameTime = timeAccumulator / frameCounter;
+        double fps = 1000.0 / averageFrameTime;
+
+        double cpuUsage = getCPUUsage();
+
+        std::cout << "=====================================" << std::endl;
+        std::cout << "Rays: " << rayCount << std::endl;
+        std::cout << "Vertices (approx): " << rayCount * 100 << std::endl; // Approximate, since CPU draws step-by-step
+        std::cout << "Average Frame Time: " << averageFrameTime << " ms" << std::endl;
+        std::cout << "FPS: " << fps << std::endl;
+        std::cout << "CPU Usage: " << cpuUsage << " %" << std::endl;
+        std::cout << "=====================================" << std::endl;
+
+        frameCounter = 0;
+        timeAccumulator = 0.0;
+    }
+}
+
+
 void drawCircle(struct Circle circle)
 {
     glBegin(GL_POLYGON); //starts drawing a filled circle
@@ -46,7 +110,7 @@ void generateRay(struct Circle circle, struct Ray rays[raysN])
         rays[i].xStart = circle.x;
         rays[i].yStart = circle.y;
         rays[i].angle = angle;
-        cout << "Angle = " << angle << endl;
+        //cout << "Angle = " << angle << endl;
     }
 }
 
@@ -159,8 +223,6 @@ void drawRay(struct Ray rays[raysN], struct Circle objects[])
 }
 
 
-
-
 Circle shadow = { 700, 300, 80 };
 double speed = 5;
 
@@ -188,6 +250,12 @@ bool needToGenerateRays(double lightX, double lightY, double lastLightX, double 
 void Display()
 {
     static Ray rays[raysN];
+
+    static auto lastTime = std::chrono::high_resolution_clock::now();
+    auto now = std::chrono::high_resolution_clock::now();
+    double deltaTime = std::chrono::duration<double, std::milli>(now - lastTime).count();
+    lastTime = now;
+
     Circle light = { circleX, circleY, circleR };
     Circle shadow2 = { 900, 525, 40 };
     Circle shadow3 = { 900, 120, 40 };
@@ -202,7 +270,7 @@ void Display()
     shadows[0] = shadow;
     shadows[1] = shadow2;
     shadows[2] = shadow3;
-    // Only generate rays if the light circle has moved significantly
+
     if (needToGenerateRays(light.x, light.y, lastCircleX, lastCircleY)) {
         generateRay(light, rays);
         lastCircleX = light.x;
@@ -212,8 +280,11 @@ void Display()
     glColor4f(1.0, 0.8, 0.2, 0.2); // ray color
     drawRay(rays, shadows);
 
+    displayMetrics(raysN, raysN * 100, deltaTime); // Roughly estimating vertices = rays × 100 steps
+
     glFlush();
 }
+
 
 void mouse(int button, int state, int x, int y) {
     if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
