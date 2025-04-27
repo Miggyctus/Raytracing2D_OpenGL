@@ -1,12 +1,15 @@
 ﻿  GraphicsProject.cpp
-C:\Users\mayal\Desktop\NTUST\Graphics\GraphicsProject\GraphicsProject.cpp(36,21): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\Users\mayal\Desktop\NTUST\Graphics\GraphicsProject\GraphicsProject.cpp(37,63): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
-C:\Users\mayal\Desktop\NTUST\Graphics\GraphicsProject\GraphicsProject.cpp(37,29): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
-C:\Users\mayal\Desktop\NTUST\Graphics\GraphicsProject\GraphicsProject.cpp(75,31): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
-C:\Users\mayal\Desktop\NTUST\Graphics\GraphicsProject\GraphicsProject.cpp(75,24): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
-C:\Users\mayal\Desktop\NTUST\Graphics\GraphicsProject\GraphicsProject.cpp(138,33): warning C4305: 'argument': truncation from 'double' to 'GLfloat'
-C:\Users\mayal\Desktop\NTUST\Graphics\GraphicsProject\GraphicsProject.cpp(163,18): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\Users\mayal\Desktop\NTUST\Graphics\GraphicsProject\GraphicsProject.cpp(164,18): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\mayal\Desktop\NTUST\Graphics\GraphicsProject\GraphicsProject.cpp(35,21): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\mayal\Desktop\NTUST\Graphics\GraphicsProject\GraphicsProject.cpp(36,63): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\mayal\Desktop\NTUST\Graphics\GraphicsProject\GraphicsProject.cpp(36,29): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\mayal\Desktop\NTUST\Graphics\GraphicsProject\GraphicsProject.cpp(81,40): warning C4305: 'argument': truncation from 'double' to 'GLfloat'
+C:\Users\mayal\Desktop\NTUST\Graphics\GraphicsProject\GraphicsProject.cpp(85,40): warning C4305: 'argument': truncation from 'double' to 'GLfloat'
+C:\Users\mayal\Desktop\NTUST\Graphics\GraphicsProject\GraphicsProject.cpp(87,40): warning C4305: 'argument': truncation from 'double' to 'GLfloat'
+C:\Users\mayal\Desktop\NTUST\Graphics\GraphicsProject\GraphicsProject.cpp(94,35): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\mayal\Desktop\NTUST\Graphics\GraphicsProject\GraphicsProject.cpp(94,28): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+C:\Users\mayal\Desktop\NTUST\Graphics\GraphicsProject\GraphicsProject.cpp(212,33): warning C4305: 'argument': truncation from 'double' to 'GLfloat'
+C:\Users\mayal\Desktop\NTUST\Graphics\GraphicsProject\GraphicsProject.cpp(237,18): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\mayal\Desktop\NTUST\Graphics\GraphicsProject\GraphicsProject.cpp(238,18): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
   Generating code
   3 of 26 functions (11.5%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation

@@ -1,8 +1,6 @@
 ﻿#include <GL/glut.h>
 #include <GLFW/glfw3.h>
 #include <cmath>
-#include <cstdlib>
-#include <ctime> 
 #include <iostream>
 
 using namespace std;
@@ -11,6 +9,7 @@ using namespace std;
 #define HEIGHT 600
 #define PI 3.14159265358979323846
 #define raysN 500
+#define objectsN 3
 
 double circleX = 300, circleY = 300, circleR = 40;
 double lastCircleX = 300, lastCircleY = 300;
@@ -51,50 +50,119 @@ void generateRay(struct Circle circle, struct Ray rays[raysN])
     }
 }
 
-void drawRay(struct Ray rays[raysN], struct Circle object)
+void drawRay(struct Ray rays[raysN], struct Circle objects[])
 {
-    double radiusSquared = pow(object.r, 2);
     static bool lineWidthSet = false;
     if (!lineWidthSet) {
-        glLineWidth(5);  // Set line width once, if not already set
+        glLineWidth(10);
         lineWidthSet = true;
     }
+
+    const int maxBounces = 3; // Set how many reflections you want
+
     for (int i = 0; i < raysN; i++)
     {
         Ray ray = rays[i];
-        int endOfScreen = 0, objectHit = 0;
         double step = 1;
         double xDraw = ray.xStart, yDraw = ray.yStart;
+        double dx = cos(ray.angle);
+        double dy = sin(ray.angle);
 
-        // Draw the rays using GL_LINES (instead of GL_POINTS)
-        glBegin(GL_POINTS);
-        while (!endOfScreen && !objectHit)
+        int currentBounce = 0;
+        bool continueRay = true;
+
+        while (continueRay && currentBounce <= maxBounces)
         {
-            xDraw = xDraw + step * cos(ray.angle);
-            yDraw = yDraw + step * sin(ray.angle);
-            glVertex2f(xDraw, yDraw);
+            int endOfScreen = 0, objectHit = 0;
+            double xStart = xDraw, yStart = yDraw;
 
-            if (xDraw < 0 || xDraw > WIDTH)
+            // Choose color depending on bounce
+            if (currentBounce == 0)
+                glColor3f(1.0, 0.8, 0.2); // Primary ray (yellow)
+            else if (currentBounce == 1)
+                glColor3f(1, 1, 1); // 1st reflection (blue)
+            else if (currentBounce == 2)
+                glColor3f(0.8, 0.2, 1.0); // 2nd reflection (purple)
+            else
+                glColor3f(0.2, 1.0, 0.8); // 3rd+ reflection (cyan)
+
+            glBegin(GL_POINTS);
+            while (!endOfScreen && !objectHit)
             {
-                endOfScreen = 1;
+                xDraw = xDraw + step * dx;
+                yDraw = yDraw + step * dy;
+                glVertex2f(xDraw, yDraw);
+
+                if (xDraw < 0 || xDraw > WIDTH || yDraw < 0 || yDraw > HEIGHT)
+                {
+                    endOfScreen = 1;
+                }
+
+                for (int j = 0; j < objectsN; j++)
+                {
+                    double radiusSquared = pow(objects[j].r, 2);
+                    double distanceSquared = pow(xDraw - objects[j].x, 2) + pow(yDraw - objects[j].y, 2);
+                    if (distanceSquared < radiusSquared)
+                    {
+                        objectHit = 1;
+                    }
+                }
             }
-            if (yDraw < 0 || yDraw > HEIGHT)
+            glEnd();
+
+            if (objectHit)
             {
-                endOfScreen = 1;
+                // Find which object was hit
+                int collidedObject = -1;
+                for (int j = 0; j < objectsN; j++)
+                {
+                    double radiusSquared = pow(objects[j].r, 2);
+                    double distanceSquared = pow(xDraw - objects[j].x, 2) + pow(yDraw - objects[j].y, 2);
+                    if (distanceSquared < radiusSquared)
+                    {
+                        collidedObject = j;
+                        break;
+                    }
+                }
+
+                if (collidedObject != -1)
+                {
+                    // Calculate reflection
+                    double nx = (xDraw - objects[collidedObject].x) / objects[collidedObject].r;
+                    double ny = (yDraw - objects[collidedObject].y) / objects[collidedObject].r;
+                    double normalLength = sqrt(nx * nx + ny * ny);
+                    nx /= normalLength;
+                    ny /= normalLength;
+
+                    double dot = dx * nx + dy * ny;
+                    dx = dx - 2 * dot * nx;
+                    dy = dy - 2 * dot * ny;
+
+                    // Set new starting point slightly forward to avoid getting stuck
+                    xDraw = xDraw + dx * step;
+                    yDraw = yDraw + dy * step;
+                }
             }
-            double distanceSquared = pow(xDraw - object.x, 2) + pow(yDraw - object.y, 2);
-            if (distanceSquared < radiusSquared)
+            else
             {
-                objectHit = 1;
+                continueRay = false; // No more collisions, stop
             }
+
+            if (endOfScreen)
+            {
+                continueRay = false; // Out of bounds, stop
+            }
+
+            currentBounce++;
         }
-        glEnd();
     }
-
 }
 
+
+
+
 Circle shadow = { 700, 300, 80 };
-double speed = 10;
+double speed = 5;
 
 void updateShadow(int value)
 {
@@ -111,7 +179,7 @@ void updateShadow(int value)
     glutTimerFunc(16, updateShadow, 0); // Update every 16ms (60 FPS)
 }
 
-bool needToGenerateRays(double lightX, double lightY, double lastLightX, double lastLightY, double threshold = 1.0)
+bool needToGenerateRays(double lightX, double lightY, double lastLightX, double lastLightY, double threshold = 2.0)
 {
     // Check if the light has moved significantly (you can tweak the threshold)
     return (abs(lightX - lastLightX) > threshold || abs(lightY - lastLightY) > threshold);
@@ -121,13 +189,19 @@ void Display()
 {
     static Ray rays[raysN];
     Circle light = { circleX, circleY, circleR };
-
+    Circle shadow2 = { 900, 525, 40 };
+    Circle shadow3 = { 900, 120, 40 };
     glClear(GL_COLOR_BUFFER_BIT);
 
     glColor3f(1.0, 1.0, 1.0); // white
     drawCircle(light);
     drawCircle(shadow);
-
+    drawCircle(shadow2);
+    drawCircle(shadow3);
+    Circle shadows[objectsN];
+    shadows[0] = shadow;
+    shadows[1] = shadow2;
+    shadows[2] = shadow3;
     // Only generate rays if the light circle has moved significantly
     if (needToGenerateRays(light.x, light.y, lastCircleX, lastCircleY)) {
         generateRay(light, rays);
@@ -136,7 +210,7 @@ void Display()
     }
 
     glColor4f(1.0, 0.8, 0.2, 0.2); // ray color
-    drawRay(rays, shadow);
+    drawRay(rays, shadows);
 
     glFlush();
 }
@@ -157,7 +231,7 @@ void mouse(int button, int state, int x, int y) {
         glGetIntegerv(GL_VIEWPORT, viewport);
 
         // Convert mouse coordinates to OpenGL coordinates
-        gluUnProject(x, windowHeight - y, 0, modelview, projection, viewport, &glX, &glY, &glZ);
+        gluUnProject(x, HEIGHT - y, 0, modelview, projection, viewport, &glX, &glY, &glZ);
 
         // Check if click is inside the circle
         float dx = glX - circleX;
@@ -185,12 +259,12 @@ void motion(int x, int y)
         glGetDoublev(GL_PROJECTION_MATRIX, projection);
         glGetIntegerv(GL_VIEWPORT, viewport);
 
-        gluUnProject(x, windowHeight - y, 0, modelview, projection, viewport, &glX, &glY, &glZ);
+        gluUnProject(x, HEIGHT - y, 0, modelview, projection, viewport, &glX, &glY, &glZ);
 
         if (glX != circleX || glY != circleY) {  // Only update and redraw if position changed
             circleX = glX;
             circleY = glY;
-            glutPostRedisplay();  // Request redraw
+            //glutPostRedisplay();  // Request redraw
         }
     }
 }
